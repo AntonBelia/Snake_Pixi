@@ -18,7 +18,7 @@ export default class Snake {
     this.graphics = new PIXI.Graphics();
     this.app.stage.addChild(this.graphics);
 
-    this.speedMultiplier = 0,8;
+    this.speedMultiplier = 1;
   }
 
   update(berry1, berry2, score, canvas, mode) {
