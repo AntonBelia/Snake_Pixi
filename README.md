@@ -2,6 +2,8 @@
 
 This is a classic Snake game implemented using Pixi.js version 8.1.6. The game includes different modes and a graphical user interface (GUI) to enhance the gaming experience.
 
+Demo[https://antonbelia.github.io/Snake_Pixi/]
+
 ## Features
 
 - Classic Snake gameplay with several modes.
