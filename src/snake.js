@@ -12,7 +12,7 @@ export default class Snake {
     this.dx = this.config.sizeCell;
     this.dy = 0;
     this.tails = [];
-		this.walls = [];
+    this.walls = [];
     this.maxTails = 3;
 
     this.graphics = new PIXI.Graphics();
@@ -21,56 +21,91 @@ export default class Snake {
     this.speedMultiplier = 1;
   }
 
-  update(berry, score, canvas, mode) {
-    this.x += this.dx * this.speedMultiplier;
-    this.y += this.dy * this.speedMultiplier;
-
-    if (this.x < 0 || this.x >= this.app.screen.width || this.y < 0 || this.y >= this.app.screen.height) {
-      this.death();
-      score.setToZero();
-      berry.randomPosition();
-    }
-
-    this.tails.unshift({ x: this.x, y: this.y });
-
-    if (this.tails.length > this.maxTails) {
-      this.tails.pop();
-    }
-
-    this.tails.forEach((el, index) => {
-      if (el.x === berry.x && el.y === berry.y) {
-        this.maxTails++;
-        score.incScore();
-        berry.randomPosition();
-
-        if (mode === "Speed") {
-          this.speedMultiplier *= 1.1;
-        } else if (mode === "Walls") {
-          this.addWall(berry.x, berry.y);
-        } else if (mode === "Portal") {
-          this.portalTeleport(berry);
-        }
-      }
-
-      for (let i = index + 1; i < this.tails.length; i++) {
-        if (el.x === this.tails[i].x && el.y === this.tails[i].y) {
-          this.death();
-          score.setToZero();
-          berry.randomPosition();
-        }
-      }
-
-      this.walls.forEach((wall) => {
-        if (el.x === wall.x && el.y === wall.y) {
-          this.death();
-          score.setToZero();
-          berry.randomPosition();
-        }
-      });
-    });
-
-    this.draw();
-  }
+  update(berry1, berry2, score, canvas, mode) {
+		this.x += this.dx * this.speedMultiplier;
+		this.y += this.dy * this.speedMultiplier;
+	
+		if (mode === "No die") {
+			if (this.x < 0) {
+				this.x = this.app.screen.width - this.config.sizeCell;
+			} else if (this.x >= this.app.screen.width) {
+				this.x = 0;
+			}
+			if (this.y < 0) {
+				this.y = this.app.screen.height - this.config.sizeCell;
+			} else if (this.y >= this.app.screen.height) {
+				this.y = 0;
+			}
+		} else if (mode !== "Portal") {
+			if (this.x < 0 || this.x >= this.app.screen.width || this.y < 0 || this.y >= this.app.screen.height) {
+				this.death();
+				score.setToZero();
+				berry1.randomPosition();
+				berry2.randomPosition();
+				return;
+			}
+		}
+	
+		this.tails.unshift({ x: this.x, y: this.y });
+	
+		if (this.tails.length > this.maxTails) {
+			this.tails.pop();
+		}
+	
+		let ateBerry = false;
+		this.tails.forEach((el, index) => {
+			if ((el.x === berry1.x && el.y === berry1.y) || (el.x === berry2.x && el.y === berry2.y)) {
+				ateBerry = true;
+				this.maxTails++;
+				score.incScore();
+				if (mode === "Portal") {
+					if (el.x === berry1.x && el.y === berry1.y) {
+						this.portalTeleport(berry2);
+					} else if (el.x === berry2.x && el.y === berry2.y) {
+						this.portalTeleport(berry1);
+					}
+				} else {
+					berry1.randomPosition();
+					berry2.randomPosition();
+				}
+	
+				if (mode === "Speed") {
+					this.speedMultiplier *= 1.1;
+				} else if (mode === "Walls") {
+					this.addWall(el.x, el.y);
+				}
+			}
+	
+			for (let i = index + 1; i < this.tails.length; i++) {
+				if (el.x === this.tails[i].x && el.y === this.tails[i].y) {
+					if (mode !== "No die") {
+						this.death();
+						score.setToZero();
+						berry1.randomPosition();
+						berry2.randomPosition();
+						return;
+					}
+				}
+			}
+	
+			this.walls.forEach((wall) => {
+				if (el.x === wall.x && el.y === wall.y) {
+					this.death();
+					score.setToZero();
+					berry1.randomPosition();
+					berry2.randomPosition();
+					return;
+				}
+			});
+		});
+	
+		if (!ateBerry) {
+			berry1.draw();
+			berry2.draw();
+		}
+	
+		this.draw();
+	}
 
   draw() {
     this.graphics.clear();
@@ -85,8 +120,13 @@ export default class Snake {
       this.graphics.fill(index === 0 ? 0xfa0556 : 0xa00034);
     });
 
-		this.walls.forEach((wall) => {
-			this.graphics.rect(wall.x, wall.y, this.config.sizeCell, this.config.sizeCell);
+    this.walls.forEach((wall) => {
+      this.graphics.rect(
+        wall.x,
+        wall.y,
+        this.config.sizeCell,
+        this.config.sizeCell
+      );
       this.graphics.fill(0x000000);
     });
   }
@@ -97,10 +137,10 @@ export default class Snake {
     this.dx = this.config.sizeCell;
     this.dy = 0;
     this.tails = [];
-		this.walls = [];
+    this.walls = [];
     this.maxTails = 3;
-		this.speedMultiplier = 1;
-		game.stopGame();
+    this.speedMultiplier = 1;
+    game.stopGame();
   }
 
   control(e) {
@@ -119,21 +159,27 @@ export default class Snake {
     }
   }
 
-	updateMode(mode) {
+  updateMode(mode) {
     if (mode === "Speed") {
       this.speedMultiplier = 1;
     }
   }
 
-	addWall(x, y) {
-    this.walls.push({ x: getRandomInt(0, 600), y: getRandomInt(0, 600) });
-  }
+  addWall(x, y) {
+		let newX, newY;
+		do {
+			newX = getRandomInt(0, this.app.screen.width / this.config.sizeCell) * this.config.sizeCell;
+			newY = getRandomInt(0, this.app.screen.height / this.config.sizeCell) * this.config.sizeCell;
+		} while (this.tails.some(tail => tail.x === newX && tail.y === newY) || (this.x === newX && this.y === newY));
+	
+		this.walls.push({ x: newX, y: newY });
+	}
 
   portalTeleport(berry) {
     const newX = berry.x;
     const newY = berry.y;
-    berry.randomPosition();
     this.x = newX;
     this.y = newY;
+    berry.randomPosition();
   }
 }

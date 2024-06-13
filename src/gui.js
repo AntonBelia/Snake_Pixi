@@ -53,7 +53,7 @@ export default class GUI {
     this.modeText.position.set(230, 100);
     this.menuContainer.addChild(this.modeText);
 
-    this.modes = ["Classic", "Walls", "Portal", "Speed"];
+    this.modes = ["Classic", "Walls", "Portal", "Speed", "No die"];
     this.modeButtons = [];
     this.modes.forEach((mode, index) => {
       let modeButton = new PIXI.Text({

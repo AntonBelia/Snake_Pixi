@@ -22,7 +22,8 @@ class Game {
 
     this.gui = new GUI(this.app);
     this.snake = new Snake(this.app);
-    this.berry = new Berry(this.app);
+    this.berry1 = new Berry(this.app);
+    this.berry2 = new Berry(this.app)
     this.score = new Score(this.app);
     this.app.stage.addChild(this.score.text);
     new GameLoop(this.update.bind(this), this.draw.bind(this));
@@ -36,24 +37,31 @@ class Game {
 	showMenu() {
     this.isGameActive = false;
     this.gui.showMenu();
-		this.berry.hide();
+		this.berry1.hide();
+    this.berry2.hide();
   }
 
 	startGame() {
     this.isGameActive = true;
     this.gui.hideMenu();
-		this.berry.show();
+		this.berry1.show();
+		if (this.gui.selectedMode === 'Portal') {
+			this.berry2.show();
+		} else {
+			this.berry2.hide();
+		}
   }
 
 	stopGame() {
     this.isGameActive = false;
     this.gui.showMenu();
-		this.berry.hide();
+		this.berry1.hide();
+    this.berry2.hide();
   }
 
   update() {
     if (this.isGameActive) {
-      this.snake.update(this.berry, this.score, this.app, this.gui.selectedMode);
+      this.snake.update(this.berry1, this.berry2, this.score, this.app, this.gui.selectedMode);
       this.gui.updateBestScore(this.score.score);
     }
   }
