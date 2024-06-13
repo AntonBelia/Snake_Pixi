@@ -28,7 +28,7 @@ export default class Berry {
     this.y =
       getRandomInt(0, this.app.screen.height / this.config.sizeCell) *
       this.config.sizeCell;
-    this.draw();
+    	// this.draw();
   }
 
 	hide() {

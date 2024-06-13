@@ -18,7 +18,7 @@ export default class Snake {
     this.graphics = new PIXI.Graphics();
     this.app.stage.addChild(this.graphics);
 
-    this.speedMultiplier = 1;
+    this.speedMultiplier = 0,8;
   }
 
   update(berry1, berry2, score, canvas, mode) {
@@ -60,21 +60,30 @@ export default class Snake {
 					ateBerry = true;
 					this.maxTails++;
 					score.incScore();
-					if (mode === "Portal") {
-						if (el.x === berry1.x && el.y === berry1.y) {
-							this.portalTeleport(berry2);
-						} else if (el.x === berry2.x && el.y === berry2.y) {
-							this.portalTeleport(berry1);
-						}
-					} else {
-						berry1.randomPosition();
-						berry2.randomPosition();
-					}
 	
 					if (mode === "Speed") {
 						this.speedMultiplier *= 1.1;
 					} else if (mode === "Walls") {
 						this.addWall(el.x, el.y);
+					}
+				}
+
+				if (mode === "Portal" && ((el.x === berry1.x && el.y === berry1.y) || (el.x === berry2.x && el.y === berry2.y))) {
+					ateBerry = true;
+					this.maxTails++;
+					score.incScore();
+					this.portalTeleport(berry1, berry2);
+				} else {
+					if (el.x === berry1.x && el.y === berry1.y) {
+						ateBerry = true;
+						this.maxTails++;
+						score.incScore();
+						berry1.randomPosition();
+					} else if (el.x === berry2.x && el.y === berry2.y) {
+						ateBerry = true;
+						this.maxTails++;
+						score.incScore();
+						berry2.randomPosition();
 					}
 				}
 	
@@ -178,11 +187,16 @@ export default class Snake {
 		this.walls.push({ x: newX, y: newY });
 	}
 
-  portalTeleport(berry) {
-    const newX = berry.x;
-    const newY = berry.y;
-    this.x = newX;
-    this.y = newY;
-    berry.randomPosition();
-  }
+  portalTeleport(berry1, berry2) {
+		if (this.x === berry1.x && this.y === berry1.y) {
+			this.x = berry2.x;
+			this.y = berry2.y;
+		} else if (this.x === berry2.x && this.y === berry2.y) {
+			this.x = berry1.x;
+			this.y = berry1.y;
+		}
+	
+		berry1.randomPosition();
+		berry2.randomPosition();
+	}
 }
